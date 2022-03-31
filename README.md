@@ -1,6 +1,6 @@
 # Getting Started with Create React App
 
-[![Demo] (my-app\akelney.png)]
+![Screenshot](akelney.png)
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
