@@ -1,72 +1,90 @@
-# Getting Started with Create React App
+# Akelney — Recipe Finder
 
 ![Screenshot](akelney.png)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A recipe browser built on the [Spoonacular](https://spoonacular.com/food-api)
+API. Browse random picks and vegetarian dishes in carousels, filter by cuisine,
+search by keyword, and open a recipe for its ingredients and instructions.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- **Popular Picks** and **Vegetarian Picks** carousels on the home page
+- **Cuisine pages** — Italian, American, Thai, Japanese, and so on, each a route
+- **Keyword search** with its own results page
+- **Recipe detail** with a tabbed switch between ingredients and instructions
+- **Animated route transitions** via Framer Motion
+- Responsive layout throughout
 
-### `npm start`
+## Stack
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+| | |
+| --- | --- |
+| Framework | React 17 (Create React App) |
+| Routing | React Router v6 |
+| Styling | styled-components |
+| Animation | Framer Motion |
+| Carousels | [Splide](https://splidejs.com) |
+| Icons | react-icons |
+| Data | Spoonacular API |
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## The one interesting problem
 
-### `npm test`
+Spoonacular's free tier is metered in points per day, and a carousel that
+refetches thirty random recipes on every mount burns through it in an
+afternoon. So each fetch checks `localStorage` first and only calls the API on
+a miss:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```jsx
+const getPopular = async () => {
+  const check = localStorage.getItem('popular')
+  if (check) {
+    setPopular(JSON.parse(check))
+  } else {
+    const api = await fetch(
+      `https://api.spoonacular.com/recipes/random?apiKey=${process.env.REACT_APP_API_KEY}&number=30`
+    )
+    const data = await api.json()
+    localStorage.setItem('popular', JSON.stringify(data.recipes))
+    setPopular(data.recipes)
+  }
+}
+```
 
-### `npm run build`
+That is a real fix for a real constraint, and it is worth knowing what it costs:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- **The cache never expires.** Once written, "Popular Picks" is frozen for that
+  browser forever. Storing a timestamp alongside the payload and treating
+  anything older than a day as a miss would keep the saving and lose the
+  staleness.
+- **A failed request poisons nothing, but it shows nothing either.** There is
+  no `catch` and no check on `response.ok`, so an over-quota response resolves
+  into an empty carousel with no explanation.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Running locally
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```bash
+git clone https://github.com/Vette1123/Akelney-React-App.git
+cd Akelney-React-App
+npm install
+```
 
-### `npm run eject`
+Get a free key from [spoonacular.com/food-api](https://spoonacular.com/food-api)
+and put it in `.env`:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```bash
+REACT_APP_API_KEY=your_key_here
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```bash
+npm start
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+The app runs at `http://localhost:3000`.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+> **Note:** the key is read in the browser, so it ships in the bundle. That is
+> fine for a demo on a free tier and wrong for anything metered against a card
+> — the fix is a small server route that holds the key and proxies the call.
 
-## Learn More
+---
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Built by [Mohamed Gado](https://mohamedgado.com) · 2022
