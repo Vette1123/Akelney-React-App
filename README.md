@@ -9,7 +9,7 @@ search by keyword, and open a recipe for its ingredients and instructions.
 ## Features
 
 - **Popular Picks** and **Vegetarian Picks** carousels on the home page
-- **Cuisine pages** — Italian, American, Thai, Japanese, and so on, each a route
+- **Cuisine pages** for Italian, American, Thai, Japanese, and so on, each a route
 - **Keyword search** with its own results page
 - **Recipe detail** with a tabbed switch between ingredients and instructions
 - **Animated route transitions** via Framer Motion
@@ -31,7 +31,7 @@ search by keyword, and open a recipe for its ingredients and instructions.
 
 Spoonacular's free tier is metered in points per day, and a carousel that
 refetches thirty random recipes on every mount burns through it in an
-afternoon. So each fetch checks `localStorage` first and only calls the API on
+afternoon. Each fetch therefore checks `localStorage` first and only calls the API on
 a miss:
 
 ```jsx
@@ -50,13 +50,13 @@ const getPopular = async () => {
 }
 ```
 
-That is a real fix for a real constraint, and it is worth knowing what it costs:
+The cache has two costs:
 
 - **The cache never expires.** Once written, "Popular Picks" is frozen for that
   browser forever. Storing a timestamp alongside the payload and treating
   anything older than a day as a miss would keep the saving and lose the
   staleness.
-- **A failed request poisons nothing, but it shows nothing either.** There is
+- **A failed request shows nothing.** There is
   no `catch` and no check on `response.ok`, so an over-quota response resolves
   into an empty carousel with no explanation.
 
@@ -82,8 +82,8 @@ npm start
 The app runs at `http://localhost:3000`.
 
 > **Note:** the key is read in the browser, so it ships in the bundle. That is
-> fine for a demo on a free tier and wrong for anything metered against a card
-> — the fix is a small server route that holds the key and proxies the call.
+> fine for a demo on a free tier, but wrong for anything metered against a card.
+> A small server route that holds the key and proxies the call would fix it.
 
 ---
 
